@@ -1,0 +1,44 @@
+# HADOOP
+wget https://downloads.apache.org/hadoop/common/hadoop-3.3.6/hadoop-3.3.6.tar.gz
+tar -xvzf hadoop-3.3.6.tar.gz
+mv hadoop-3.3.6 /usr/local/hadoop
+
+export HADOOP_HOME=/usr/local/hadoop
+export PATH=$HADOOP_HOME/bin:$PATH
+export PATH=$HADOOP_HOME/sbin:$PATH
+source ~/.bashrc
+
+start-dfs.sh
+start-yarn.sh
+hdfs dfsadmin -report
+
+# KAFKA 
+wget https://downloads.apache.org/kafka/3.5.0/kafka_2.13-3.5.0.tgz
+tar -xvzf kafka_2.13-3.5.0.tgz
+mv kafka_2.13-3.5.0 /usr/local/kafka
+
+export KAFKA_HOME=/usr/local/kafka
+export PATH=$KAFKA_HOME/bin:$PATH
+source ~/.bashrc
+
+zookeeper-server-start.sh config/zookeeper.properties &
+kafka-server-start.sh config/server.properties &
+
+#Test Topic
+kafka-topics.sh --create --topic TestTopic --bootstrap-server localhost:9092 --partitions 3 --replication-factor 1
+kafka-topics.sh --create --topic weather_data_stream --bootstrap-server localhost:9092 --partitions 3 --replication-factor 1
+# Checked topic is listed
+kafka-topics.sh --list --bootstrap-server localhost:9092
+
+# SPARK
+wget https://downloads.apache.org/spark/spark-3.4.4/spark-3.4.4-bin-hadoop3.tgz
+tar -xvzf spark-3.4.4-bin-hadoop3.tgz
+mv spark-3.4.4-bin-hadoop3 /usr/local/spark
+
+export SPARK_HOME=/usr/local/spark
+export PATH=$SPARK_HOME/bin:$PATH
+export PATH=$SPARK_HOME/sbin:$PATH
+source ~/.bashrc
+
+start-all.sh
+jps
