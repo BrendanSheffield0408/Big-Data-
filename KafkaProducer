@@ -1,0 +1,42 @@
+nano weather_producer.py
+# Inside Python Code
+from kafka import KafkaProducer
+import json
+import requests
+import time
+
+# KafkaProducer
+producer = KafkaProducer(
+    bootstrap_servers="localhost:9092",
+    value_serializer=lambda v: json.dumps(v).encode("utf-8")
+)
+
+# OpenWeather API setup
+API_KEY = "0917aaa5cc0433b47c1174809873f34b"
+CITY = "Manchester"
+URL = f"http://api.openweathermap.org/data/2.5/weather?q={CITY}&appid={API_KEY}&units=metric"
+
+while True:
+    try:
+        response = requests.get(URL)
+        weather_data = response.json()
+
+        if "main" in weather_data and "wind" in weather_data and "clouds" in weather_data:
+            message = {
+                "city": CITY,
+                "temperature": weather_data["main"]["temp"],
+                "humidity": weather_data["main"]["humidity"],
+                "pressure": weather_data["main"]["pressure"],
+                "wind_speed": weather_data["wind"]["speed"],
+                "cloud_coverage": weather_data["clouds"]["all"]
+            }
+
+            producer.send("WeatherTopic", value=message)
+            print(f"Sent: {message}")
+        else:
+            print("Error fetching weather data:", weather_data)
+
+    except Exception as e:
+        print(f"Error: {e}")
+
+    time.sleep(10)  # Send data every 10 seconds
